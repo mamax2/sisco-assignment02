@@ -1,6 +1,8 @@
 package sisco.ass02.n_body_seq;
 
-public class Body {
+import sisco.ass02.common.BodyView;
+
+public class Body implements BodyView {
     
 	private static final double G_CONST_SCALED = 0.001;
 	
@@ -30,6 +32,22 @@ public class Body {
         return vel;
     }
     
+    public double getX() {
+    	return pos.getX();
+    }
+
+    public double getY() {
+    	return pos.getY();
+    }
+
+    public double getVx() {
+    	return vel.getX();
+    }
+
+    public double getVy() {
+    	return vel.getY();
+    }
+
     public int getId() {
     	return id;
     }

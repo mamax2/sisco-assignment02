@@ -28,7 +28,12 @@ public class NBodySimulation {
 	}
 
 	public void initRandom(int nBodies) {
-		Random rand = new Random(System.currentTimeMillis());
+		initRandom(nBodies, System.currentTimeMillis());
+	}
+
+	/* con lo stesso seed si ottengono sempre gli stessi corpi (per confrontare i motori) */
+	public void initRandom(int nBodies, long seed) {
+		Random rand = new Random(seed);
 		bodies = new ArrayList<Body>();
 		for (int i = 0; i < nBodies; i++) {
 			double x = -1.0 + 2.0*rand.nextDouble();
@@ -64,7 +69,7 @@ public class NBodySimulation {
 				Body b = bodies.get(i);
 
 				/* compute total force on bodies */
-				V2d totalForce = computeTotalGForceOnBody(b);
+				V2d totalForce = computeTotalGForceOnBody(b, bodies);
 
 				/* compute instant acceleration */
 				V2d acc = new V2d(totalForce).scalarMul(1.0 / b.getMass());
@@ -96,9 +101,9 @@ public class NBodySimulation {
 	/*
 	 * 
 	 * Compute the total G force exterted on a body by the other bodies
-	 * 
+	 * (public static: riusato anche dai motori concorrenti)
 	 */
-	private V2d computeTotalGForceOnBody(Body b) {
+	public static V2d computeTotalGForceOnBody(Body b, List<Body> bodies) {
 		V2d totalForce = new V2d(0, 0);
 		for (int j = 0; j < bodies.size(); j++) {
 			Body otherBody = bodies.get(j);
@@ -113,6 +118,10 @@ public class NBodySimulation {
 		return totalForce;
 	}
 	
+	public List<Body> getBodies() {
+		return bodies;
+	}
+
 	public int getNumBodies() {
 		return bodies.size();
 	}	

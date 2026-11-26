@@ -1,0 +1,7 @@
+# file generati dalla compilazione
+target/
+
+# impostazioni locali
+.idea/workspace.xml
+.claude/
+.DS_Store

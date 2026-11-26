@@ -3,6 +3,7 @@ package sisco.ass02.mt;
 import java.util.List;
 
 import sisco.ass02.n_body_seq.Body;
+import sisco.ass02.n_body_seq.NBodySimulation;
 import sisco.ass02.n_body_seq.V2d;
 
 /**
@@ -37,7 +38,7 @@ class Worker extends Thread {
 				// fase 1 velocità
 				for (int i = from; i < to; i++) {
 					Body b = bodies.get(i);
-					V2d totalForce = computeTotalGForceOnBody(b);
+					V2d totalForce = NBodySimulation.computeTotalGForceOnBody(b, bodies);
 					V2d acc = new V2d(totalForce).scalarMul(1.0 / b.getMass());
 					b.updateVelocity(acc, dt);
 				}
@@ -57,21 +58,5 @@ class Worker extends Thread {
 		} catch (InterruptedException ex) {
 			// interrotto dallo shutdown
 		}
-	}
-
-	// forza totale esercitata dagli altri corpi su b
-	private V2d computeTotalGForceOnBody(Body b) {
-		V2d totalForce = new V2d(0, 0);
-		for (int j = 0; j < bodies.size(); j++) {
-			Body otherBody = bodies.get(j);
-			if (!b.equals(otherBody)) {
-				try {
-					totalForce.sum(b.computeGForceBy(otherBody));
-				} catch (Exception ex) {
-					// corpi sovrapposti
-				}
-			}
-		}
-		return totalForce;
 	}
 }

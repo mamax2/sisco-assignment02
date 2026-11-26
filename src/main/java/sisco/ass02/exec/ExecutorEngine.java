@@ -3,6 +3,7 @@ package sisco.ass02.exec;
 
 import sisco.ass02.common.BodyView;
 import sisco.ass02.common.SimulationEngine;
+import sisco.ass02.n_body_seq.Body;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,19 +12,29 @@ import java.util.concurrent.Executors;
 
 public class ExecutorEngine implements SimulationEngine {
 
+    private final List<Body> bodies;
+    private final double dt;
     private final ExecutorService executor;
     private double virtualTime;
 
-    public ExecutorEngine(int numBodies, int numThreads, double dt, double g, long seed) {
+    /**
+     * Stessa firma di MultiThreadedEngine: i corpi arrivano già creati
+     * (NBodySimulation.initRandom(n, seed) + getBodies()), così entrambi i motori
+     * partono dagli stessi dati.
+     */
+    public ExecutorEngine(List<Body> bodies, double dt, int numThreads) {
+        this.bodies = bodies;
+        this.dt = dt;
         this.executor = Executors.newFixedThreadPool(Math.max(1, numThreads));
         this.virtualTime = 0.0;
-        // TODO: inizializzare i corpi (usando seed) e salvare parametri
     }
 
     @Override
     public void step() throws InterruptedException {
-        // TODO: 1) calcolare forze/accelerazioni/velocità in parallelo leggendo lo stato attuale
-        //       2) aggiornare le posizioni e incrementare virtualTime += dt
+        // TODO: 1) calcolare le velocità in parallelo con NBodySimulation.computeTotalGForceOnBody(b, bodies)
+        //          (come nella fase 1 di mt.Worker)
+        //          (leggono le posizioni attuali: aspettare che finiscano TUTTI i task)
+        //       2) aggiornare le posizioni (b.updatePos(dt)) e virtualTime += dt
         throw new UnsupportedOperationException("TODO: implement step()");
     }
 
@@ -36,8 +47,8 @@ public class ExecutorEngine implements SimulationEngine {
 
     @Override
     public List<? extends BodyView> getBodies() {
-        // TODO: restituire uno snapshot/vista sicura dei corpi
-        return Collections.emptyList();
+        // vista in sola lettura, come MultiThreadedEngine (la copia per la GUI la fa il controller)
+        return Collections.unmodifiableList(bodies);
     }
 
     @Override

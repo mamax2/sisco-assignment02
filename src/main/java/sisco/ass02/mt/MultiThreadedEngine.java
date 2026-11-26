@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import sisco.ass02.common.BodyView;
+import sisco.ass02.common.SimulationConfig;
 import sisco.ass02.common.SimulationEngine;
 import sisco.ass02.n_body_seq.Body;
 
@@ -22,6 +23,7 @@ public class MultiThreadedEngine implements SimulationEngine {
 	private final Barrier barrier;
 	private final List<Worker> workers;
 	private double vt;   // tempo virtuale
+	private boolean terminated = false;
 
 	public MultiThreadedEngine(List<Body> bodies, double dt, int nWorkers) {
 		this.bodies = bodies;
@@ -46,11 +48,15 @@ public class MultiThreadedEngine implements SimulationEngine {
 
 	// un worker per ogni core disponibile
 	public MultiThreadedEngine(List<Body> bodies, double dt) {
-		this(bodies, dt, Runtime.getRuntime().availableProcessors());
+		this(bodies, dt, SimulationConfig.DEFAULT_THREADS);
 	}
 
 	@Override
 	public void step() throws InterruptedException {
+		if (terminated) {
+			// i worker non ci sono più: senza questo controllo resterei bloccato sulla barriera
+			throw new IllegalStateException("engine already shut down");
+		}
 		barrier.hitAndWaitAll();   // START: faccio partire i worker
 		barrier.hitAndWaitAll();   // MID: tutti hanno calcolato le velocità
 		barrier.hitAndWaitAll();   // END: tutti hanno aggiornato le posizioni
@@ -75,9 +81,12 @@ public class MultiThreadedEngine implements SimulationEngine {
 		return vt;
 	}
 
-	// interrompo i worker (fermi su START) e aspetto che terminino
+	// interrompo i worker (fermi su START) e aspetto che terminino.
+	// Va chiamato dallo stesso thread che chiama step(), quando non c'è uno step in corso
+	// (vedi SimulationEngine.shutdown)
 	@Override
 	public void shutdown() {
+		terminated = true;
 		for (Worker w : workers) {
 			w.interrupt();
 		}

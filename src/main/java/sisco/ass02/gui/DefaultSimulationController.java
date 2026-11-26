@@ -40,11 +40,14 @@ public class DefaultSimulationController implements SimulationController {
     @Override
     public void stepOnce() {
         // TODO: eseguire un singolo step se in PAUSED/IDLE e notificare il listener
+        //       passando una copia di engine.getBodies(), non la lista originale
     }
 
     @Override
     public void stop() {
         // TODO: fermare il loop, portare lo stato a STOPPED e rilasciare risorse se previsto
+        //       NB: engine.shutdown() va chiamato dal thread del loop quando esce,
+        //       non da qui (EDT): se uno step è in corso il thread del loop resterebbe bloccato
         state = SimulationState.STOPPED;
     }
 
